@@ -10,8 +10,14 @@ export default defineConfig({
     },
   },
   build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    emptyOutDir: true,
+    sourcemap: true,
     rollupOptions: {
-      external: ['url', 'fs', 'path']
+      output: {
+        manualChunks: undefined
+      }
     }
   },
   server: {

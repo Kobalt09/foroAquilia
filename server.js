@@ -230,13 +230,24 @@ app.post('/api/comments', async (req, res) => {
 
 // IMPORTANTE: Esta debe ser la última ruta
 // Manejo de todas las demás rutas - servir el frontend
-app.get('*', (req, res) => {
-  // Si la ruta comienza con /api, devolver 404
+app.get('*', (req, res, next) => {
+  // Si la ruta comienza con /api, pasar al siguiente middleware
   if (req.path.startsWith('/api')) {
-    return res.status(404).json({ error: 'Ruta de API no encontrada' });
+    return next();
   }
+  
   // Para cualquier otra ruta, servir el index.html del frontend
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'), (err) => {
+    if (err) {
+      console.error('Error serving index.html:', err);
+      res.status(500).send('Error loading the application');
+    }
+  });
+});
+
+// Manejo de errores para rutas de API no encontradas
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ error: 'Ruta de API no encontrada' });
 });
 
 app.listen(PORT, () => {
