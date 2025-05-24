@@ -12,7 +12,12 @@ const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
+
+// Servir archivos estáticos desde el directorio dist
 app.use(express.static(path.join(__dirname, 'dist')));
+
+// Asegurarse de que todas las rutas de la API empiecen con /api
+app.use('/api', express.static(path.join(__dirname, 'dist')));
 
 const USERS_FILE = path.join(__dirname, 'src', 'data', 'usuarios.json');
 const POSTS_FILE = path.join(__dirname, 'src', 'data', 'posts.json');
@@ -223,11 +228,19 @@ app.post('/api/comments', async (req, res) => {
   }
 });
 
-// Manejo de rutas no encontradas
-app.use((req, res) => {
-  res.status(404).json({ error: 'Ruta no encontrada' });
+// IMPORTANTE: Esta debe ser la última ruta
+// Manejo de todas las demás rutas - servir el frontend
+app.get('*', (req, res) => {
+  // Si la ruta comienza con /api, devolver 404
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({ error: 'Ruta de API no encontrada' });
+  }
+  // Para cualquier otra ruta, servir el index.html del frontend
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`Frontend disponible en http://localhost:${PORT}`);
+  console.log(`API disponible en http://localhost:${PORT}/api`);
 }); 
